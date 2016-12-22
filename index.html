@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="description" content="electron-osx-sign guide">
+    <meta name="keywords" content="electron-osx-sign,guide">
+    <meta name="viewport" content="width=1024, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+    <meta charset="UTF-8">
+    <title>electron-osx-sign guide</title>
+    <style type="text/css">
+      html {
+        font-family: Verdana, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-width: 1024px;
+        font-size: 15px;
+        line-height: 1.8;
+        color: hsl(0, 0%, 40%);
+      }
+
+      body > article {
+        position: relative;
+        margin: 80px auto 120px;
+        padding-right: 360px;
+        width: 600px;
+      }
+
+      body > article > header {
+        margin-bottom: 3em;
+      }
+
+      body > article > section {
+        position: relative;
+        clear: both;
+        margin-bottom: 3em;
+      }
+
+      aside {
+        box-sizing: border-box;
+        float: right;
+        margin-right: -360px;
+        width: 320px;
+        padding: 20px;
+        margin-bottom: 3em;
+        border: solid 1px hsl(0, 0%, 85%);
+        border-radius: 3px;
+        background-color: hsl(0, 0%, 99.5%);
+        box-shadow: 0 1px 3px hsl(0, 0%, 95%);
+      }
+
+      input,
+      select {
+        -webkit-appearance: none;
+        box-sizing: border-box;
+        font-size: 1em;
+        line-height: 1.5;
+        outline: none;
+        color: hsl(0, 0%, 40%);
+        border: solid 1px hsl(0, 0%, 80%);
+        border-radius: 2px;
+        box-shadow: 0 1px 2px hsl(0, 0%, 95%);
+      }
+
+      input:not([type="radio"]):not([type="checkbox"]),
+      select {
+        display: block;
+        width: 100%;
+        margin: 1em 0;
+        padding: 0.75em 1em;
+        font-family: Menlo, monospace;
+        cursor: text;
+      }
+
+      input[type="checkbox"],
+      input[type="radio"] {
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+        margin: 0;
+        padding: 0;
+        width: 1.8em;
+        height: 1.8em;
+      }
+
+      input[type="checkbox"]::after,
+      input[type="radio"]::after {
+        position: absolute;
+        line-height: 1.8;
+        right: 0;
+        bottom: -1px;
+        left: 0;
+        text-align: center;
+        color: hsl(0, 0%, 40%);
+        font-family: Menlo, monospace;
+      }
+
+      input[type="checkbox"]:checked::after {
+        content: "x";
+      }
+
+      input[type="radio"]:checked::after {
+        content: "x";
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      h1 a {
+        text-decoration: none;
+        color: inherit !important;
+      }
+
+      h2 {
+        font-size: 18px;
+        display: list-item;
+        list-style: disc;
+        clear: both;
+      }
+
+      h2 a {
+        text-decoration: none;
+        color: inherit !important;
+      }
+
+      h3 {
+        font-size: 14px;
+      }
+
+      p a {
+        color: inherit !important;
+      }
+
+      [data-ng-filter] {
+        color: #2980b9;
+      }
+
+      code {
+        font-family: Menlo, monospace;
+        line-height: 1.5;
+      }
+
+      code, code * {
+        color: #f39c12 !important;
+      }
+
+      code > span {
+        display: inline-block;
+      }
+    </style>
+    <script type="text/javascript">
+      window.addEventListener("load", function () {
+
+        var data = {}, restore = false;
+        if (window.localStorage) {
+          var _data = window.localStorage.getItem("electron-osx-sign-guide-data");
+          if (_data) {
+            data = JSON.parse(_data);
+            restore = true;
+          }
+        }
+
+        function dataDidUpdate() {
+
+          document.querySelectorAll("[data-ng-value]").forEach(function (elem) {
+            var dataKey = elem.getAttribute("data-ng-value");
+            if (typeof dataKey == "string" && dataKey.length > 0 && dataKey[0] == "'") {
+              dataKey = dataKey.substr(1);
+              elem.textContent = JSON.stringify(data[dataKey]);
+            } else {
+              elem.textContent = data[dataKey];
+            }
+          });
+
+          document.querySelectorAll("[data-ng-filter]").forEach(function (elem) {
+            var display = true;
+
+            elem.getAttribute("data-ng-filter").split(";").map(function (entry) {
+              var dataValues = entry.split(":");
+              var dataKey = dataValues.shift();
+
+              if (typeof dataKey == "string" && dataKey.length > 0 && dataKey[0] == "!") {
+                var flag = false;
+                dataKey = dataKey.substr(1);
+              } else {
+                var flag = true;
+              }
+
+              if (dataKey in data) {
+                if (dataValues.length == 0 && !!data[dataKey] == flag) {
+                  return;
+                }
+                for (var dataValue of dataValues) {
+                  switch (typeof data[dataKey]) {
+                    case "object":
+                      if (dataValue in data[dataKey] &&
+                        data[dataKey][dataValue] == flag) {
+                        return;
+                      }
+                      break;
+                    default:
+                      if (flag && dataValue == data[dataKey] ||
+                        !flag && dataValue != data[dataKey]) {
+                        return;
+                      }
+                  }
+                }
+              }
+
+              display = false;
+            });
+
+            if (display) {
+              elem.style.display = "";
+            } else {
+              elem.style.display = "none"; // Hide the elem
+            }
+          });
+
+          if (window.localStorage) {
+            window.localStorage.setItem("electron-osx-sign-guide-data", JSON.stringify(data));
+          }
+
+        }
+
+        document.querySelectorAll("[name^='opts']").forEach(function (elem) {
+          switch (elem.tagName) {
+
+            case "INPUT":
+
+              switch (elem.type) {
+
+                case "radio":
+
+                  elem.addEventListener("change", function () {
+                    if (elem.checked) {
+                      data[elem.name] = elem.value;
+                    }
+                    dataDidUpdate(); // Cascade the data update
+                  });
+
+                  if (restore) {
+                    // Load from saved status
+                    if (data[elem.name] == elem.value) {
+                      elem.checked = true;
+                    }
+                  } else {
+                    if (elem.checked) {
+                      data[elem.name] = elem.value;
+                    }
+                  }
+
+                  break;
+
+                case "checkbox":
+
+                  if (!(elem.name in data)) {
+                    data[elem.name] = {};
+                  }
+                  elem.addEventListener("change", function () {
+                    data[elem.name][elem.value] = elem.checked;
+                    dataDidUpdate(); // Cascade the data update
+                  });
+
+                  if (restore) {
+                    // Load from saved status
+                    if (elem.name in data && elem.value in data[elem.name]) {
+                      elem.checked = data[elem.name][elem.value];
+                    }
+                  } else {
+                    data[elem.name][elem.value] = elem.checked;
+                  }
+
+                  break;
+
+                case "text":
+
+                  elem.addEventListener("keyup", function () {
+                    data[elem.name] = elem.value;
+                    dataDidUpdate(); // Cascade the data update
+                  });
+
+                  elem.addEventListener("change", function () {
+                    data[elem.name] = elem.value;
+                    dataDidUpdate(); // Cascade the data update
+                  });
+
+                  if (restore) {
+                    if (data[elem.name]) {
+                      elem.value = data[elem.name];
+                      elem.click(); // To force hide the placeholder text if value updated
+                    }
+                  } else {
+                    data[elem.name] = elem.value;
+                  }
+
+                  break;
+
+              }
+
+              break;
+
+            case "SELECT":
+
+              elem.addEventListener("change", function () {
+                data[elem.name] = elem.value;
+                dataDidUpdate();
+              });
+
+              if (restore) {
+                if (data[elem.name]) {
+                  elem.value = data[elem.name];
+                }
+              } else {
+                data[elem.name] = elem.value;
+              }
+
+              break;
+
+          }
+        });
+
+        restore = false;
+
+        // Apply the init data
+        dataDidUpdate();
+
+      });
+    </script>
+  </head>
+  <body>
+    <article>
+      <h1><code>electron-osx-sign</code> guide</h1>
+      <header>
+        <aside>
+          <label for="opts-type">For development of for distribution?</label>
+          <select id="opts-type" name="opts.type">
+            <option value="development" checked>development</option>
+            <option value="distribution">distribution</option>
+          </select>
+          <label for="opts-platform">Build platform:</label>
+          <select id="opts-platform" name="opts.platform">
+            <option value="mas" checked>mas - Mac App Store</option>
+            <option value="darwin">darwin - MacOS</option>
+          </select>
+          <label for="opts-app">Enter the path to your app to avoid generating code fragment with placeholder:</label>
+          <input type="text" id="opts-app" name="opts.app" autocomplete="off" placeholder="&lt;path-to-app&gt;">
+        </aside>
+        <p>The content in this guide is specific with app bundles built upon Electron and may not comply with other general codesigning tasks. It is assumed that an Electron version 1.1.1 or later is used for development; if you are using a legacy version of Electron, please refer to another codesigning guide.</p>
+        <p>This guide is specific to a <code data-ng-filter="opts.type:development">development</code><code data-ng-filter="opts.type:distribution">distribution</code> build for distribution <span data-ng-filter="opts.platform:mas">on the Mac App Store</span><span data-ng-filter="opts.platform:darwin">outside the Mac App Store</span>. Please create your app bundle with the corresponding Electron <code data-ng-filter="opts.platform:mas">mas</code><code data-ng-filter="opts.platform:darwin">darwin</code> build. Update the fields on the right accordingly if you wish to sign for different purposes; the guide will respond dynamically as you update your settings. As your edits are saved locally, you may come back and pick up from where you left off while setting up your codesigning flow.</p>
+      </header>
+
+      <!-- Stage: Identities -->
+      <h2 id="stage-identity">Codesigning identitity</h2>
+      <section>
+        <aside>
+          <label for="opts-identity">Enter your signing identity here if you wish to specify a signing identity, or have renamed it to a different pattern, <code data-ng-filter="opts.type:development">Mac Developer: *</code><code data-ng-filter="opts.type:distribution;opts.platform:mas">3rd Party Mac Developer Application: *</code><code data-ng-filter="opts.type:distribution;opts.platform:darwin">Developer ID Application: *</code> by default:</label>
+          <input type="text" id="opts-identity" name="opts.identity" autocomplete="off" placeholder="default">
+          <label for="opts-keychain">Enter the path to your keychain if not by system default:</label>
+          <input type="text" id="opts-keychain" name="opts.keychain" autocomplete="off" placeholder="default">
+        </aside>
+        <p>You will have to obtain signing identities from Apple after becoming a registered developer. <span data-ng-filter="opts.type:development">To codesign your app for development build, you should use an identity matching <code>Mac Developer: *</code>.</span><span data-ng-filter="opts.type:distribution;opts.platform:mas">To codesign your app for distribution on the Mac App Store, you should an identity matching <code>3rd Party Mac Developer Application: *</code>.</span><span data-ng-filter="opts.type:distribution;opts.platform:darwin">To codesign your app for distribution outside the Mac App Store, you should an identity matching <code>Developer ID Application: *</code>.</span> Do specify the name of your signing identity if there are multiple in your keychain with similar and ambigious names, or if they are of different naming patterns.</p>
+          <p>Make sure your signing identity is valid; run <code>security find-identity -p codesigning -v <span data-ng-filter="opts.keychain"> <span data-ng-value="'opts.keychain"></span></span></code> in Terminal to display a list of valid identities installed in the keychain. Install your signing identity in the system default keychain or in another keychain.</p>
+          <p>Creating codesigning identities is beyond the scope of this guide of the current version; please look for related external sources.</p>
+      </section>
+
+      <!-- Stage: Entitlements -->
+      <h2 id="stage-entitlements">Entitlements file</h2>
+      <section>
+        <aside>
+          <label for="opts-entitlements"><span data-ng-filter="opts.platform:mas">Enter the path to your entitlements file if you have made changes to the default with App Sandbox enabled:</span><span data-ng-filter="opts.platform:darwin">Enter the path to your entitlements file if you wish to sign with entitlements file (when you want to enable App Sandbox or to specify other entitlement keys):</span></label>
+          <input type="text" id="opts-entitlements" name="opts.entitlements" autocomplete="off" placeholder="default">
+          <div data-ng-filter="opts.platform:darwin">
+            <label for="opts-entitlements-dict:com.apple.security.app-sandbox">If you have enabled App Sandbox in your modified entitlements file, please check the following box:</label>
+            <input type="checkbox" id="opts-entitlements-dict:com.apple.security.app-sandbox" name="opts.entitlements.dict" value="com.apple.security.app-sandbox">
+          </div>
+        </aside>
+        <p>An entitlements file allow you to enable App Sandbox and other features involving interaction with the system.</p>
+        <p data-ng-filter="opts.platform:mas">As you will distribute your app within the Mac App Store, App Sandbox is <strong>required</strong> by Apple for security. However, it will remove most capabilities of your app interacting with the system. A default entitlements file with App Sandbox enabled is <a href="https://github.com/electron-userland/electron-osx-sign/blob/master/default.entitlements.mas.plist" target="_blank"> available on GitHub</a>. If your app does not request specific access to the system, the default entitlements file with App Sandbox should work for you; however, you may modify the file up to your need. After adding the entitlement keys, please save the changed file to your working directory.</p>
+        <p data-ng-filter="opts.platform:darwin">It is not required but encouraged to have App Sandbox enabled for distribution outside the Mac App Store; <a href="#stage-provisioning-profile">skip to the next section</a> if you are neither enabling App Sandbox nor adding additional entitlement keys to your signing process. An empty entitlements file is <a href="https://github.com/electron-userland/electron-osx-sign/blob/master/default.entitlements.darwin.plist" target="_blank"> available on GitHub</a>; also, a default entitlements file with App Sandbox enabled is <a href="https://github.com/electron-userland/electron-osx-sign/blob/master/default.entitlements.mas.plist" target="_blank"> available on GitHub</a>.</p>
+      </section>
+
+      <!-- Stage: Provisioning profiles -->
+      <h2 id="stage-provisioning-profile">Provisioning profile</h2>
+      <section>
+        <aside>
+          <label for="opts-provisioning-profile">Enter the path to your provisioning profile if you wish to specify the provisioning profile to be embedded, default to auto-discover from the working directory:</label>
+          <input type="text" id="opts-provisioning-profile" name="opts.provisioning-profile" autocomplete="off" placeholder="default">
+        </aside>
+        <p>With App Sandbox enabled, Electron 1.1.1 and later requires embedding of provisioning profile for stable performance.</p>
+        <p data-ng-filter="opts.platform:mas">As your app should have App Sandbox enabled, it is <strong>required</strong> to embed provisionig profile in your app bundle while testing or before shipping. <span data-ng-filter="opts.type:development">A provisioning profile for development specifies a range of devices on which your app bundle may run.</span><span data-ng-filter="opts.type:distribution">A provisioning profile for distribution on the Mac App Store does not allow local testing. Therefore, if you would like to test your app before shipping, please follow the development guide first.</span></p>
+        <p data-ng-filter="opts.platform:darwin;opts.entitlements.dict:com.apple.security.app-sandbox">It is <strong>required</strong> to embed provisioning profile from having enabled App Sandbox in your entitlements file. <span data-ng-filter="opts.type:development">A provisioning profile for development build specifies a range of devices on which your app bundle may run.</span><span data-ng-filter="opts.type:distribution">A provisioning profile for distribution outside the Mac App Store allows running on multiple devices.</span></p>
+        <p data-ng-filter="opts.platform:darwin;!opts.entitlements.dict:com.apple.security.app-sandbox">You may optionally embed provisioning profile. <a href="#stage-recipe">Skip to get your recipe if you would like not to include it.</a> <span data-ng-filter="opts.type:development">A provisioning profile for development build specifies a range of devices on which your app bundle may run.</span><span data-ng-filter="opts.type:distribution">A provisioning profile for distribution outside the Mac App Store allows running on multiple devices.</span> As App Sandbox is not enabled, your app should function even when no provisioning profile is embedded.</p>
+        <p>Make sure that your provisioning profile matches your build by inspecting it through running <code>cms -D -i <span data-ng-filter="opts.provisioning-profile"><span data-ng-value="'opts.provisioning-profile"></span></span><span data-ng-filter="!opts.provisioning-profile">&lt;path-to-provisioning-profile&gt;</span></code> in Terminal. <span data-ng-filter="opts.type:development">A provisioning profile for development build should contain a list of registered devices under <code>ProvisionedDevices</code>.</span><span data-ng-filter="opts.type:distribution;opts.platform:mas">A provisioning profile for distribution on the Mac App Store should not contain <code>ProvisionedDevices</code> nor <code>ProvisionsAllDevices</code>.</span><span data-ng-filter="opts.type:distribution;opts.platform:darwin">A provisioning profile for distribution outside the Mac App Store should contain <code>ProvisionsAllDevices</code>.</span></p>
+        <p>It is recommended to save your provisioning profiles in your working directory so that <code>electron-osx-sign</code> may automatically pick up the appropriate provisioning profile to embed. The current version does not replace existing provisioning profile in the app bundle; it is therefore encouraged to sign a fresh build every time.</p>
+      </section>
+
+      <!-- Stage: Recipe -->
+      <h1>Recipes</h1>
+      <section>
+        <p>Generated below are recipes for codesigning your app based on your choices made above. It may be easier to test codesigning with <code>electron-osx-sign</code> before integrating in a more streamlined workflow.</p>
+      </section>
+
+      <h2 id="stage-recipe:electron-osx-sign"><code>electron-osx-sign</code></h2>
+      <section>
+        <h3>CLI</h3>
+          <code>
+            <span>electron-osx-sign</span>
+            <span data-ng-filter="opts.app" data-ng-value="'opts.app"></span>
+            <span data-ng-filter="!opts.app">&lt;path-to-app&gt;</span>
+            <span>--platform=<span data-ng-value="opts.platform"></span></span>
+            <span>--type=<span data-ng-value="opts.type"></span></span>
+            <span data-ng-filter="opts.identity">--identity=<span data-ng-value="'opts.identity"></span></span>
+            <span data-ng-filter="opts.keychain">--keychain=<span data-ng-value="'opts.keychain"></span></span>
+            <span data-ng-filter="opts.entitlements">--entitlements=<span data-ng-value="'opts.entitlements"></span></span>
+            <span data-ng-filter="opts.provisioning-profile">--provisioning-profile=<span data-ng-value="'opts.provisioning-profile"></span></span>
+          </code>
+          <h3>API <code>opts</code></h3>
+          <code>
+            <span>{ </span>
+            <span>apps: <span data-ng-filter="opts.app" data-ng-value="'opts.app"></span><span data-ng-filter="!opts.app">&lt;path-to-app&gt;</span></span>
+            <br><span>, platform: <span data-ng-value="'opts.platform"></span></span>
+            <br><span>, type: <span data-ng-value="'opts.type"></span></span>
+            <br data-ng-filter="opts.identity"><span data-ng-filter="opts.identity">, identity: <span data-ng-value="'opts.identity"></span></span>
+            <br data-ng-filter="opts.keychain"><span data-ng-filter="opts.keychain">, keychain: <span data-ng-value="'opts.keychain"></span></span>
+            <br data-ng-filter="opts.entitlements"><span data-ng-filter="opts.entitlements">, entitlements: <span data-ng-value="'opts.entitlements"></span></span>
+            <br data-ng-filter="opts.provisioning-profile"><span data-ng-filter="opts.provisioning-profile">, "provisioning-profile": <span data-ng-value="'opts.provisioning-profile"></span></span>
+            <span> }</span>
+          </code>
+        </code>
+      </section>
+
+      <h2 id="stage-recipe:electron-packager"><code>electron-packager</code></h2>
+      <section>
+        <p>Setting up app packaging with <code>electron-packager</code> is beyond the scope of this guide; please refer to its manual or external sources. Also note that only the bare minimum is produced below.</p>
+        <h3>CLI</h3>
+          <code>
+            <span>electron-packager</span>
+            <span>&lt;path-to-source&gt;</span>
+            <span>--platform=<span data-ng-value="opts.platform"></span></span>
+            <span>--osx-sign.type=<span data-ng-value="opts.type"></span></span>
+            <span data-ng-filter="opts.identity">--osx-sign.identity=<span data-ng-value="'opts.identity"></span></span>
+            <span data-ng-filter="opts.keychain">--osx-sign.keychain=<span data-ng-value="'opts.keychain"></span></span>
+            <span data-ng-filter="opts.entitlements">--osx-sign.entitlements=<span data-ng-value="'opts.entitlements"></span></span>
+            <span data-ng-filter="opts.provisioning-profile">--osx-sign.provisioning-profile=<span data-ng-value="'opts.provisioning-profile"></span></span>
+          </code>
+          <h3>API <code>opts</code></h3>
+          <code>
+            <span>{ </span>
+            <span>dir: &lt;path-to-source&gt;</span>
+            <br><span>, platform: <span data-ng-value="'opts.platform"></span></span>
+            <span>, "osx-sign":</span>
+            <br><span>{ </span>
+            <span>type: <span data-ng-value="'opts.type"></span></span>
+            <br data-ng-filter="opts.identity"><span data-ng-filter="opts.identity">, identity: <span data-ng-value="'opts.identity"></span></span>
+            <br data-ng-filter="opts.keychain"><span data-ng-filter="opts.keychain">, keychain: <span data-ng-value="'opts.keychain"></span></span>
+            <br data-ng-filter="opts.entitlements"><span data-ng-filter="opts.entitlements">, entitlements: <span data-ng-value="'opts.entitlements"></span></span>
+            <br data-ng-filter="opts.provisioning-profile"><span data-ng-filter="opts.provisioning-profile">, "provisioning-profile": <span data-ng-value="'opts.provisioning-profile"></span></span>
+            <span> } }</span>
+          </code>
+        </code>
+      </section>
+
+      <h2 id="stage-recipe:electron-builder"><code>electron-builder</code></h2>
+      <section>
+        <code>// TODO</code>
+      </section>
+
+      <footer>
+        <p><a href="https://github.com/electron-userland">electron-userland</a> &copy; 2016</p>
+      </footer>
+
+    </article>
+  </body>
+</html>
