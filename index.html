@@ -347,8 +347,9 @@
           <label for="opts-app">Enter the path to your app to avoid generating code fragment with placeholder:</label>
           <input type="text" id="opts-app" name="opts.app" autocomplete="off" placeholder="&lt;path-to-app&gt;">
         </aside>
-        <p>The content in this guide is specific with app bundles built upon Electron and may not comply with other general codesigning tasks. It is assumed that an Electron version 1.1.1 or later is used for development; if you are using a legacy version of Electron, please refer to another codesigning guide.</p>
-        <p>This guide is specific to a <code data-filter="opts.type:development">development</code><code data-filter="opts.type:distribution">distribution</code> build for distribution <span data-filter="opts.platform:mas">on the Mac App Store</span><span data-filter="opts.platform:darwin">outside the Mac App Store</span>. Please create your app bundle with the corresponding Electron <code data-filter="opts.platform:mas">mas</code><code data-filter="opts.platform:darwin">darwin</code> build. Update the fields on the right accordingly if you wish to sign for different purposes; the guide will respond dynamically as you update your settings. As your edits are saved locally, you may come back and pick up from where you left off while setting up your codesigning flow.</p>
+        <p>The content in this guide is specific with app bundles built upon Electron and may not comply with other general codesigning tasks (concepts are transferable). An Electron version 1.1.1 or later is assumed; if you are using a legacy version of Electron, please refer to another codesigning guide. This guide is up-to-date with the latest <code>electron-osx-sign</code>.</p>
+        <p>This guide is tailored to a <code data-filter="opts.type:development">development</code><code data-filter="opts.type:distribution">distribution</code> build for distribution <span data-filter="opts.platform:mas">on the Mac App Store</span><span data-filter="opts.platform:darwin">outside the Mac App Store</span>. Please package your app bundle with Electron <code data-filter="opts.platform:mas">mas</code><code data-filter="opts.platform:darwin">darwin</code> build.</p>
+        <p>Update the fields on the right accordingly if you wish to sign for different purposes; the guide will respond dynamically as you update your settings. As your edits are saved locally, you may come back and pick up from where you left off while setting up your codesigning flow.</p>
       </header>
 
       <!-- Stage: Identities -->
@@ -396,6 +397,16 @@
         <p>It is recommended to save your provisioning profiles in your working directory so that <code>electron-osx-sign</code> may automatically pick up the appropriate provisioning profile to embed. The current version does not replace existing provisioning profile in the app bundle; it is therefore encouraged to sign a fresh build every time.</p>
       </section>
 
+      <!-- Stage: Provisioning profiles -->
+      <h2 id="stage-hardened-runtime">Hardened runtime</h2>
+      <section>
+        <aside>
+          <label for="opts-hardened-runtime">Enable hardened runtime:</label>
+          <input type="checkbox" id="opts-hardened-runtime-dict" name="opts.hardened-runtime.dict" value="yes">
+        </aside>
+        <p>The hardened runtime is introduced in macOS 10.14 Mojave and is <strong>required</strong> for app notarization. More info on notarizating your app is <a target="_blank" href="https://developer.apple.com/documentation/security/notarizing_your_app_before_distribution">available here</a>. <span data-filter="opts.platform:darwin;opts.type:distribution">For distribution outside the Mac App Store, it is recommended to enable hardened runtime to later notarize your app.</span><span data-filter="opts.type:development">Please note that even with hardened runtime, the app <strong>cannot</strong> be notarized as it is signed by a development certificate.</span><span data-filter="opts.platform:mas;opts.type:distribution">Please note that even with hardened runtime, the app bundle <strong>cannot</strong> be notarized as it is signed by a <code>3rd Party Mac Developer Application: *</code> certificate.</span></p>
+      </section>
+
       <!-- Stage: Recipe -->
       <h1>Recipes</h1>
       <section>
@@ -415,6 +426,7 @@
             <span data-filter="opts.keychain">--keychain=<span data-value="'opts.keychain"></span></span>
             <span data-filter="opts.entitlements">--entitlements=<span data-value="'opts.entitlements"></span></span>
             <span data-filter="opts.provisioning-profile">--provisioning-profile=<span data-value="'opts.provisioning-profile"></span></span>
+            <span data-filter="opts.hardened-runtime.dict:yes">--hardened-runtime</span>
           </code>
           <h3>API <code>opts</code></h3>
           <code>
@@ -426,6 +438,7 @@
             <br data-filter="opts.keychain"><span data-filter="opts.keychain">, keychain: <span data-value="'opts.keychain"></span></span>
             <br data-filter="opts.entitlements"><span data-filter="opts.entitlements">, entitlements: <span data-value="'opts.entitlements"></span></span>
             <br data-filter="opts.provisioning-profile"><span data-filter="opts.provisioning-profile">, "provisioning-profile": <span data-value="'opts.provisioning-profile"></span></span>
+            <br data-filter="opts.hardened-runtime.dict:yes"><span data-filter="opts.hardened-runtime.dict:yes">, "hardened-runtime": true</span>
             <span> }</span>
           </code>
         </code>
@@ -444,6 +457,7 @@
             <span data-filter="opts.keychain">--osx-sign.keychain=<span data-value="'opts.keychain"></span></span>
             <span data-filter="opts.entitlements">--osx-sign.entitlements=<span data-value="'opts.entitlements"></span></span>
             <span data-filter="opts.provisioning-profile">--osx-sign.provisioning-profile=<span data-value="'opts.provisioning-profile"></span></span>
+            <span data-filter="opts.hardened-runtime.dict:yes">--osx-sign.hardened-runtime</span>
           </code>
           <h3>API <code>opts</code></h3>
           <code>
@@ -457,6 +471,7 @@
             <br data-filter="opts.keychain"><span data-filter="opts.keychain">, keychain: <span data-value="'opts.keychain"></span></span>
             <br data-filter="opts.entitlements"><span data-filter="opts.entitlements">, entitlements: <span data-value="'opts.entitlements"></span></span>
             <br data-filter="opts.provisioning-profile"><span data-filter="opts.provisioning-profile">, "provisioning-profile": <span data-value="'opts.provisioning-profile"></span></span>
+            <br data-filter="opts.hardened-runtime.dict:yes"><span data-filter="opts.hardened-runtime.dict:yes">, "hardened-runtime": true</span>
             <span> } }</span>
           </code>
         </code>
